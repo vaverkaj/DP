@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    
+    <link rel="stylesheet" href="plyt-master/dist/plyr.css">
+
+	
+	<link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+	<link rel="stylesheet" href="../build/temp/video-js.min.css">
+</head>
+
+<body>
+   
+    <main role="main" id="main">
+       
+        <section>
+            <video poster="thumb.jpeg" controls crossorigin>
+                <!-- Video files plyr -->
+                <source src="toystory.mp4" type="video/mp4">
+            </video>
+
+           <!-- Plyr core script -->
+			<script src="plyt-master/dist/plyr.js"></script>
+        </section>
+		
+		
+		 <section>
+           <video
+				id="my-player"
+				class="video-js"
+				controls
+				preload="auto"
+				poster="thumb.jpeg"
+				data-setup='{}'>
+			  <source src="toystory.mp4" type="video/mp4"></source>
+			  <p class="vjs-no-js">
+				To view this video please enable JavaScript, and consider upgrading to a
+				web browser that
+				<a href="http://videojs.com/html5-video-support/" target="_blank">
+				  supports HTML5 video
+				</a>
+			  </p>
+			</video>
+			
+			  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+			  <script src="../build/temp/ie8/videojs-ie8.js"></script>
+
+			  <!-- Execute the bundled tests first -->
+			  <script src="../build/temp/tests.js"></script>
+			  <script src="../build/temp/browserify.js"></script>
+			  <script src="../build/temp/webpack.js"></script>
+           
+        </section>
+		
+    </main>
+	
+	
+	
+
+    
+
+</body>
+
+</html>
