@@ -1,4 +1,2 @@
-document.addEventListener('DOMContentLoaded', () => { 
-    const player = new Plyr('video');
-    window.player = player;
-})
+const player = new Plyr('video');
+window.player = player;
