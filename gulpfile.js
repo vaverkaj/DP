@@ -25,7 +25,17 @@ const uglify = require('gulp-uglify-es').default;
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 
-const bundles = require('./bundles.json');
+const bundles = {
+    "player": {
+        "sass": {
+            "player.css": "src/sass/bundles/player.scss",
+            "error.css": "src/sass/bundles/error.scss"
+        },
+        "js": {
+            "player.js": "src/js/player.js"
+        }
+    }
+};
 
 const minSuffix = '.min';
 
@@ -59,7 +69,10 @@ const tasks = {
 };
 
 // Size plugin
-const sizeOptions = { showFiles: true, gzip: true };
+const sizeOptions = {
+    showFiles: true,
+    gzip: true
+};
 
 // Browserlist
 const browsers = ['> 1%'];
@@ -96,31 +109,34 @@ const build = {
         Object.keys(files).forEach(key => {
             const name = `js:${key}`;
             tasks.js.push(name);
-            const { output } = paths[bundle];
+            const {
+                output
+            } = paths[bundle];
             const polyfill = name.includes('polyfilled');
 
             return gulp.task(name, () =>
                 gulp
-                    .src(bundles[bundle].js[key])
-                    .pipe(sourcemaps.init())
-                    .pipe(concat(key))
-                    .pipe(
-                        rollup(
-                            {
-                                plugins: [resolve(), commonjs(), babel(babelrc(polyfill))],
-                            },
-                            options,
-                        ),
-                    )
-                    .pipe(header('typeof navigator === "object" && ')) // "Support" SSR (#935)
-                    .pipe(sourcemaps.write(''))
-                    .pipe(gulp.dest(output))
-                    .pipe(filter('**/*.js'))
-                    .pipe(uglify())
-                    .pipe(size(sizeOptions))
-                    .pipe(rename({ suffix: minSuffix }))
-                    .pipe(sourcemaps.write(''))
-                    .pipe(gulp.dest(output)),
+                .src(bundles[bundle].js[key])
+                .pipe(sourcemaps.init())
+                .pipe(concat(key))
+                .pipe(
+                    rollup({
+                            plugins: [resolve(), commonjs(), babel(babelrc(polyfill))],
+                        },
+                        options,
+                    ),
+                )
+                .pipe(header('typeof navigator === "object" && ')) // "Support" SSR (#935)
+                .pipe(sourcemaps.write(''))
+                .pipe(gulp.dest(output))
+                .pipe(filter('**/*.js'))
+                .pipe(uglify())
+                .pipe(size(sizeOptions))
+                .pipe(rename({
+                    suffix: minSuffix
+                }))
+                .pipe(sourcemaps.write(''))
+                .pipe(gulp.dest(output)),
             );
         });
     },
@@ -131,14 +147,16 @@ const build = {
 
             return gulp.task(name, () =>
                 gulp
-                    .src(bundles[bundle].sass[key])
-                    .pipe(sass())
-                    .on('error', gutil.log)
-                    .pipe(concat(key))
-                    .pipe(prefix(browsers, { cascade: false }))
-                    .pipe(cleancss())
-                    .pipe(size(sizeOptions))
-                    .pipe(gulp.dest(paths[bundle].output)),
+                .src(bundles[bundle].sass[key])
+                .pipe(sass())
+                .on('error', gutil.log)
+                .pipe(concat(key))
+                .pipe(prefix(browsers, {
+                    cascade: false
+                }))
+                .pipe(cleancss())
+                .pipe(size(sizeOptions))
+                .pipe(gulp.dest(paths[bundle].output)),
             );
         });
     },
@@ -149,26 +167,28 @@ const build = {
         // Process Icons
         return gulp.task(name, () =>
             gulp
-                .src(paths[bundle].src.sprite)
-                .pipe(
-                    svgmin({
-                        plugins: [
-                            {
-                                removeDesc: true,
-                            },
-                        ],
-                    }),
-                )
-                .pipe(svgstore())
-                .pipe(rename({ basename: bundle }))
-                .pipe(size(sizeOptions))
-                .pipe(gulp.dest(paths[bundle].output)),
+            .src(paths[bundle].src.sprite)
+            .pipe(
+                svgmin({
+                    plugins: [{
+                        removeDesc: true,
+                    }, ],
+                }),
+            )
+            .pipe(svgstore())
+            .pipe(rename({
+                basename: bundle
+            }))
+            .pipe(size(sizeOptions))
+            .pipe(gulp.dest(paths[bundle].output)),
         );
     },
 };
 // Implementation files
 build.sass(bundles.player.sass, 'player');
-build.js(bundles.player.js, 'player', { format: 'iife' });
+build.js(bundles.player.js, 'player', {
+    format: 'iife'
+});
 
 // Build all JS
 gulp.task('js', () => gulp.parallel(tasks.js));
