@@ -1,0 +1,11 @@
+{
+    "player": {
+        "sass": {
+            "player.css": "src/sass/bundles/player.scss",
+            "error.css": "src/sass/bundles/error.scss"
+        },
+        "js": {
+            "player.js": "src/js/player.js"
+        }
+    }
+}
