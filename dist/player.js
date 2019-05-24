@@ -4092,8 +4092,8 @@ typeof navigator === "object" && (function () {
 	(function () {
 	  document.addEventListener('DOMContentLoaded', function () {
 	    singleton.context(function () {
-	      var selector = '#player';
-	      var container = document.getElementById('container');
+	      var selector = '.wplyr_player';
+	      var containers = document.getElementsByClassName('wplyr_container');
 
 	      if (window.shr) {
 	        window.shr.setup({
@@ -4107,7 +4107,18 @@ typeof navigator === "object" && (function () {
 	      var tabClassName = 'tab-focus'; // Remove class on blur
 
 	      document.addEventListener('focusout', function (event) {
-	        if (!event.target.classList || container.contains(event.target)) {
+	        var anyContainerContains = false;
+
+	        for (var i = 0; i < containers.length; ++i) {
+	          var item = containers[i];
+
+	          if (item.contains(event.target)) {
+	            anyContainerContains = true;
+	            continue;
+	          }
+	        }
+
+	        if (!event.target.classList || anyContainerContains) {
 	          return;
 	        }
 
@@ -4123,35 +4134,52 @@ typeof navigator === "object" && (function () {
 
 	        setTimeout(function () {
 	          var focused = document.activeElement;
+	          var anyContainerFocused = false;
 
-	          if (!focused || !focused.classList || container.contains(focused)) {
+	          for (var i = 0; i < containers.length; ++i) {
+	            var item = containers[i];
+
+	            if (item.contains(focused)) {
+	              anyContainerContains = true;
+	              continue;
+	            }
+	          }
+
+	          if (!focused || !focused.classList || anyContainerFocused) {
 	            return;
 	          }
 
 	          focused.classList.add(tabClassName);
 	        }, 10);
-	      }); // Setup the player
+	      });
+	      var players = Array.from(document.querySelectorAll(selector)).map(function (p) {
+	        return new Plyr(p, {
+	          debug: true
+	        });
+	      });
+	      /*
+	          var player = new Plyr(selector, {
+	              debug: true,
+	              title: 'ToyStory',
+	              keyboard: {
+	                  global: true,
+	              },
+	              tooltips: {
+	                  controls: true,
+	              },
+	              captions: {
+	                  active: true,
+	              },
+	              keys: {
+	                  google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c',
+	              },
+	              ads: {
+	              },
+	          });
+	      */
+	      // Expose for tinkering in the console
 
-	      var player = new Plyr(selector, {
-	        debug: true,
-	        title: 'ToyStory',
-	        iconUrl: 'node_modules/plyr/dist/plyr.svg',
-	        keyboard: {
-	          global: true
-	        },
-	        tooltips: {
-	          controls: true
-	        },
-	        captions: {
-	          active: true
-	        },
-	        keys: {
-	          google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c'
-	        },
-	        ads: {}
-	      }); // Expose for tinkering in the console
-
-	      window.player = player; // Setup type toggle
+	      window.players = players; // Setup type toggle
 
 	      var buttons = document.querySelectorAll('[data-source]');
 	      var types = {
@@ -4230,6 +4258,8 @@ typeof navigator === "object" && (function () {
 	          newSource(currentType, true);
 	        }
 	      }
+
+	      wp_wplyr_video_setup();
 	    });
 	  });
 	})();

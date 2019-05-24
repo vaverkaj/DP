@@ -3,8 +3,8 @@ import Raven from 'raven-js';
 (() => {
     document.addEventListener('DOMContentLoaded', () => {
         Raven.context(() => {
-            const selector = '#player';
-            const container = document.getElementById('container');
+            const selector = '.wplyr_player';
+            const containers = document.getElementsByClassName('wplyr_container');
 
             if (window.shr) {
                 window.shr.setup({
@@ -19,7 +19,15 @@ import Raven from 'raven-js';
 
             // Remove class on blur
             document.addEventListener('focusout', event => {
-                if (!event.target.classList || container.contains(event.target)) {
+                var anyContainerContains = false;
+                for (var i = 0; i < containers.length; ++i) {
+                    var item = containers[i];  
+                    if(item.contains(event.target)){
+                        anyContainerContains = true;
+                        continue
+                    }
+                }
+                if (!event.target.classList || anyContainerContains) {
                     return;
                 }
 
@@ -37,7 +45,16 @@ import Raven from 'raven-js';
                 setTimeout(() => {
                     const focused = document.activeElement;
 
-                    if (!focused || !focused.classList || container.contains(focused)) {
+                    var anyContainerFocused = false;
+                    for (var i = 0; i < containers.length; ++i) {
+                        var item = containers[i];  
+                        if(item.contains(focused)){
+                            anyContainerContains = true;
+                            continue
+                        }
+                    }
+
+                    if (!focused || !focused.classList || anyContainerFocused) {
                         return;
                     }
 
@@ -45,30 +62,31 @@ import Raven from 'raven-js';
                 }, 10);
             });
 
-            // Setup the player
-            const player = new Plyr(selector, {
-                debug: true,
-                title: 'ToyStory',
-                iconUrl: 'node_modules/plyr/dist/plyr.svg',
-                keyboard: {
-                    global: true,
-                },
-                tooltips: {
-                    controls: true,
-                },
-                captions: {
-                    active: true,
-                },
-                keys: {
-                    google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c',
-                },
-                ads: {
-                },
-            });
-
-            // Expose for tinkering in the console
-            window.player = player;
-
+            const players = Array.from(document.querySelectorAll(selector)).map(p => new Plyr(p,{debug:true}));
+            /*
+                var player = new Plyr(selector, {
+                    debug: true,
+                    title: 'ToyStory',
+                    keyboard: {
+                        global: true,
+                    },
+                    tooltips: {
+                        controls: true,
+                    },
+                    captions: {
+                        active: true,
+                    },
+                    keys: {
+                        google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c',
+                    },
+                    ads: {
+                    },
+                });
+            */
+                // Expose for tinkering in the console
+                window.players = players;
+                
+           
             // Setup type toggle
             const buttons = document.querySelectorAll('[data-source]');
             const types = {
@@ -159,6 +177,8 @@ import Raven from 'raven-js';
                     newSource(currentType, true);
                 }
             }
+
+            wp_wplyr_video_setup();
         });
     });
 
