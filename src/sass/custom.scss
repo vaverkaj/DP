@@ -1,6 +1,7 @@
-.video-container {
+.wplyr_container {
     position: relative;
-
+    margin: 10px;
+    
     &:before {
         display: block;
         content: "";
@@ -9,7 +10,6 @@
     }
 
     >.plyr {
-        margin: 0;
         position: absolute;
         top: 0;
         left: 0;

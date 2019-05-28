@@ -21,8 +21,8 @@ import Raven from 'raven-js';
             document.addEventListener('focusout', event => {
                 var anyContainerContains = false;
                 for (var i = 0; i < containers.length; ++i) {
-                    var item = containers[i];  
-                    if(item.contains(event.target)){
+                    var item = containers[i];
+                    if (item.contains(event.target)) {
                         anyContainerContains = true;
                         continue
                     }
@@ -47,8 +47,8 @@ import Raven from 'raven-js';
 
                     var anyContainerFocused = false;
                     for (var i = 0; i < containers.length; ++i) {
-                        var item = containers[i];  
-                        if(item.contains(focused)){
+                        var item = containers[i];
+                        if (item.contains(focused)) {
                             anyContainerContains = true;
                             continue
                         }
@@ -62,7 +62,10 @@ import Raven from 'raven-js';
                 }, 10);
             });
 
-            const players = Array.from(document.querySelectorAll(selector)).map(p => new Plyr(p,{debug:true}));
+            const players = Array.from(document.querySelectorAll(selector)).map(p => new Plyr(p, {
+                debug: true,
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'airplay', 'fullscreen'],
+            }));
             /*
                 var player = new Plyr(selector, {
                     debug: true,
@@ -83,10 +86,24 @@ import Raven from 'raven-js';
                     },
                 });
             */
-                // Expose for tinkering in the console
-                window.players = players;
-                
-           
+            // Expose for tinkering in the console
+            window.players = players;
+
+            for (let i = 0; i < players.length; i++) {
+                const player = players[i];
+                player.sourceIndex = -1;
+                for (let j = 0; j < player.elements.original.classList.length; j++) {
+                    var classString = player.elements.original.classList[j];
+                    if (/wplyr_video_\d+/.test(classString)) {
+                        var string = classString.replace("wplyr_video_", "");
+                        player.videoId = parseInt(string, 10);
+                    }
+                }
+                nextSource(player)();
+                player.on('ended', nextSource(player));
+            }
+
+
             // Setup type toggle
             const buttons = document.querySelectorAll('[data-source]');
             const types = {
@@ -175,6 +192,50 @@ import Raven from 'raven-js';
                 // If it's not video, load the source
                 if (currentType !== types.video) {
                     newSource(currentType, true);
+                }
+            }
+
+            function isEmpty(str) {
+                return (!str || 0 === str.length);
+            }
+
+            function nextSource(player) {
+                return function () {
+                    console.log(window.videoSourceMap);
+                    if (typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
+                        do {
+                            player.sourceIndex++;
+                        } while (typeof window.videoSourceMap[player.videoId][player.sourceIndex] !== 'undefined' && isEmpty(window.videoSourceMap[player.videoId][player.sourceIndex].source) && window.videoSourceMap[player.videoId].length > player.sourceIndex)
+                        if (window.videoSourceMap[player.videoId].length <= player.sourceIndex) {
+                            player.sourceIndex = 0;
+                        }
+                        var source = window.videoSourceMap[player.videoId][player.sourceIndex].source;
+                        var type = window.videoSourceMap[player.videoId][player.sourceIndex].type
+                        var sources = [];
+                        if (type === 'youtube') {
+                            sources = [
+                                {
+                                    src: source,
+                                    provider: 'youtube'
+                                }
+                            ];
+                        } else if (type === 'video') {
+                            sources = [
+                                {
+                                    src: source,
+                                    type: 'video/mp4',
+                                }
+                            ];
+                        }
+
+                        player.source = {
+                            type: 'video',
+                            sources: sources,
+                        }
+                        if (player.sourceIndex != 0) {
+                            player.play();
+                        }
+                    }
                 }
             }
 
