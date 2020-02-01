@@ -1,4 +1,6 @@
+import Plyr from 'plyr';
 import Raven from 'raven-js';
+//import Plyr from 'node_modules\\plyr\\dist\\plyr.polyfilled.min.mjs';
 
 (() => {
     document.addEventListener('DOMContentLoaded', () => {
@@ -64,27 +66,26 @@ import Raven from 'raven-js';
 
             const players = Array.from(document.querySelectorAll(selector)).map(p => new Plyr(p, {
                 debug: true,
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'airplay', 'fullscreen'],
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', /*'captions', 'settings',*/ 'airplay', 'fullscreen'],
             }));
             /*
-                var player = new Plyr(selector, {
-                    debug: true,
-                    title: 'ToyStory',
-                    keyboard: {
-                        global: true,
-                    },
-                    tooltips: {
-                        controls: true,
-                    },
-                    captions: {
-                        active: true,
-                    },
-                    keys: {
-                        google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c',
-                    },
-                    ads: {
-                    },
-                });
+            var player = new Plyr(selector, {
+                debug: true,
+                title: 'ToyStory',
+                keyboard: {
+                    global: true,
+                },
+                tooltips: {
+                    controls: true,
+                },
+                captions: {
+                    active: true,
+                },
+                keys: {
+                    google: 'AIzaSyDrNwtN3nLH_8rjCmu5Wq3ZCm4MNAVdc0c',
+                },
+                ads: {},
+            });
             */
             // Expose for tinkering in the console
             window.players = players;
@@ -125,8 +126,7 @@ import Raven from 'raven-js';
             // Set a new source
             function newSource(type, init) {
                 // Bail if new type isn't known, it's the current type, or current type is empty (video is default) and new type is video
-                if (
-                    !(type in types) ||
+                if (!(type in types) ||
                     (!init && type === currentType) ||
                     (!currentType.length && type === types.video)
                 ) {
@@ -180,8 +180,7 @@ import Raven from 'raven-js';
 
                 // Replace current history state
                 if (currentType in types) {
-                    window.history.replaceState(
-                        {
+                    window.history.replaceState({
                             type: currentType,
                         },
                         '',
@@ -200,8 +199,7 @@ import Raven from 'raven-js';
             }
 
             function nextSource(player) {
-                return function () {
-                    console.log(window.videoSourceMap);
+                return function() {
                     if (typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
                         do {
                             player.sourceIndex++;
@@ -213,19 +211,15 @@ import Raven from 'raven-js';
                         var type = window.videoSourceMap[player.videoId][player.sourceIndex].type
                         var sources = [];
                         if (type === 'youtube') {
-                            sources = [
-                                {
-                                    src: source,
-                                    provider: 'youtube'
-                                }
-                            ];
+                            sources = [{
+                                src: source,
+                                provider: 'youtube'
+                            }];
                         } else if (type === 'video') {
-                            sources = [
-                                {
-                                    src: source,
-                                    type: 'video/mp4',
-                                }
-                            ];
+                            sources = [{
+                                src: source,
+                                type: 'video/mp4',
+                            }];
                         }
 
                         player.source = {
@@ -233,11 +227,19 @@ import Raven from 'raven-js';
                             sources: sources,
                         }
                         if (player.sourceIndex != 0) {
-                            player.play();
+                            var listener = function(event) {
+                                player.play();
+                                player.off('ready', listener);
+                            }
+                            player.on('ready', listener);
                         }
                     }
                 }
             }
+
+
+
+
 
             wp_wplyr_video_setup();
         });
