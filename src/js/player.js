@@ -1,8 +1,9 @@
-import Raven from 'raven-js';
+import Plyr from 'plyr';
+import alertify from 'alertifyjs';
 
 (() => {
     document.addEventListener('DOMContentLoaded', () => {
-        Raven.context(() => {
+        try {
             const selector = '.wplyr_player';
             const containers = document.getElementsByClassName('wplyr_container');
 
@@ -64,7 +65,7 @@ import Raven from 'raven-js';
 
             const players = Array.from(document.querySelectorAll(selector)).map(p => new Plyr(p, {
                 debug: true,
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'airplay', 'fullscreen'],
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', /*'captions', 'settings',*/ 'airplay', 'fullscreen'],
             }));
             /*
                 var player = new Plyr(selector, {
@@ -101,6 +102,7 @@ import Raven from 'raven-js';
                 }
                 nextSource(player)();
                 player.on('ended', nextSource(player));
+                player.controls;
             }
 
 
@@ -125,8 +127,7 @@ import Raven from 'raven-js';
             // Set a new source
             function newSource(type, init) {
                 // Bail if new type isn't known, it's the current type, or current type is empty (video is default) and new type is video
-                if (
-                    !(type in types) ||
+                if (!(type in types) ||
                     (!init && type === currentType) ||
                     (!currentType.length && type === types.video)
                 ) {
@@ -180,8 +181,7 @@ import Raven from 'raven-js';
 
                 // Replace current history state
                 if (currentType in types) {
-                    window.history.replaceState(
-                        {
+                    window.history.replaceState({
                             type: currentType,
                         },
                         '',
@@ -200,47 +200,56 @@ import Raven from 'raven-js';
             }
 
             function nextSource(player) {
-                return function () {
-                    console.log(window.videoSourceMap);
-                    if (typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
-                        do {
-                            player.sourceIndex++;
-                        } while (typeof window.videoSourceMap[player.videoId][player.sourceIndex] !== 'undefined' && isEmpty(window.videoSourceMap[player.videoId][player.sourceIndex].source) && window.videoSourceMap[player.videoId].length > player.sourceIndex)
-                        if (window.videoSourceMap[player.videoId].length <= player.sourceIndex) {
-                            player.sourceIndex = 0;
-                        }
-                        var source = window.videoSourceMap[player.videoId][player.sourceIndex].source;
-                        var type = window.videoSourceMap[player.videoId][player.sourceIndex].type
-                        var sources = [];
-                        if (type === 'youtube') {
-                            sources = [
-                                {
+                return function() {
+                    if (player.currentTime > 0 || player.sourceIndex == -1) {
+
+                        console.log(window.videoSourceMap);
+                        console.log(player.sourceIndex);
+                        if (typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
+                            do {
+                                console.log("do");
+                                player.sourceIndex++;
+                            } while (typeof window.videoSourceMap[player.videoId][player.sourceIndex] !== 'undefined' && isEmpty(window.videoSourceMap[player.videoId][player.sourceIndex].source) && window.videoSourceMap[player.videoId].length > player.sourceIndex)
+                            if (window.videoSourceMap[player.videoId].length <= player.sourceIndex) {
+                                player.sourceIndex = 0;
+                            }
+                            var source = window.videoSourceMap[player.videoId][player.sourceIndex].source;
+                            var type = window.videoSourceMap[player.videoId][player.sourceIndex].type
+                            var sources = [];
+                            if (type === 'youtube') {
+                                sources = [{
                                     src: source,
                                     provider: 'youtube'
-                                }
-                            ];
-                        } else if (type === 'video') {
-                            sources = [
-                                {
+                                }];
+                            } else if (type === 'video') {
+                                sources = [{
                                     src: source,
                                     type: 'video/mp4',
-                                }
-                            ];
-                        }
+                                }];
+                            }
 
-                        player.source = {
-                            type: 'video',
-                            sources: sources,
-                        }
-                        if (player.sourceIndex != 0) {
-                            player.play();
+                            player.source = {
+                                type: 'video',
+                                sources: sources,
+                            }
+                            if (player.sourceIndex != 0) {
+                                var playPromise = player.play();
+                                if (playPromise !== undefined) {
+                                    playPromise.then(function() {
+                                        console.log("Playback started");
+                                    }).catch(function(error) {
+                                        alertify.error("<b>Video playback might not be working. Please use more modern browser.</b></br>" + error);
+                                    });
+                                }
+                            }
                         }
                     }
                 }
             }
-
-            wp_wplyr_video_setup();
-        });
+        } catch (error) {
+            alertify.error("<b>Video playback might not be working. Please use more modern browser.</b></br>" + error);
+            throw error;
+        }
     });
 
 })();

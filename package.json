@@ -4,6 +4,7 @@
   "description": "Repository for Master Thesis and Thematic Project",
   "main": "index.html",
   "dependencies": {
+    "alertifyjs": "^1.13.1",
     "babel": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-latest": "^6.24.1",
