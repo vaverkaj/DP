@@ -1,6 +1,6 @@
 {
     "name": "plyr_showplayer",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Repository for Master Thesis and Thematic Project",
     "main": "index.html",
     "dependencies": {
