@@ -11620,7 +11620,7 @@ typeof navigator === "object" && (function () {
 	            console.log(window.videoSourceMap);
 	            console.log(player.sourceIndex);
 
-	            if (typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
+	            if (window.videoSourceMap && typeof window.videoSourceMap[player.videoId] !== 'undefined' && window.videoSourceMap[player.videoId].length > player.sourceIndex) {
 	              do {
 	                console.log("do");
 	                player.sourceIndex++;

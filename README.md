@@ -1,5 +1,5 @@
 # DP
-## Repository for Master Thesis and Thematic Project
+## Repository for Master Thesis
 This project is a webpage that demonstrates capabilities of chosen javascript player
 ### Instalation
 This project uses Plyr and Bootstrap. For instalation process you can just use 
